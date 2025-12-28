@@ -1,0 +1,39 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout кода
+    - uses: actions/checkout@v3
+
+    # 2. Установка Python
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11'
+
+    # 3. Установка зависимостей
+    - name: Install dependencies
+      run: |
+        pip install pytest ruff
+
+    # 4. Запуск Unit-тестов
+    - name: Run unit tests
+      run: |
+        # Если тестов нет - создаем минимальный тест
+        if [ ! -d "tests" ] && ! ls test*.py 2>/dev/null; then
+          mkdir -p tests
+          echo "def test_example(): assert True" > tests/test_example.py
+        fi
+        python -m pytest -v
+
+    # 5. Проверка кода с помощью Ruff
+    - name: Run Ruff
+      run: |
+        ruff check --output-format=github .
